@@ -26,26 +26,41 @@ const createMockEvent = (
 
 describe('Verify Reward Lambda Function', () => {
   test('Should return 400 when no transaction ID is provided', async () => {
-    // TODO: Implement this test
+    const mock: APIGatewayProxyEvent = createMockEvent({},null)
+    const response: APIGatewayProxyEvent = await handler(mock)
+    expect(response.status).toBe(400);
   });
 
   test('Should return 401 when no API key is provided', async () => {
-    // TODO: Implement this test
+    const mock: APIGatewayProxyEvent = createMockEvent({},null)
+    const response: APIGatewayProxyEvent = await handler(mock)
+    expect(response.status).toBe(401);
   });
 
   test('Should return 403 when API key is invalid', async () => {
-    // TODO: Implement this test
+    const mock: APIGatewayProxyEvent = createMockEvent({},null)
+    const response: APIGatewayProxyEvent = await handler(mock)
+    expect(response.body.message).toBe('Authorization does not match merchant');
+    expect(response.status).toBe(403);
   });
 
   test('Should return 404 when no transaction is found', async () => {
-    // TODO: Implement this test
+    const mock: APIGatewayProxyEvent = createMockEvent({},null)
+    const response: APIGatewayProxyEvent = await handler(mock)
+    expect(response.status).toBe(404);
   });
 
   test('Should return 403 when merchant does not own the transaction', async () => {
-    // TODO: Implement this test
+    const mock: APIGatewayProxyEvent = createMockEvent({},null)
+    const response: APIGatewayProxyEvent = await handler(mock)
+    expect(response.body.message).toBe('Transaction does not match merchant');
+    expect(response.status).toBe(403);
   });
 
   test('Should return reward details for valid request', async () => {
-    // TODO: Implement this test
+    const mock: APIGatewayProxyEvent = createMockEvent({},null)
+    const response: APIGatewayProxyEvent = await handler(mock)
+    expect(response.body).toContain('id')
+    expect(response.status).toBe(200);
   });
 });

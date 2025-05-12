@@ -92,27 +92,79 @@ const getRewardByTransactionId = async (transactionId: string): Promise<Reward |
  */
 export const handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   try {
-    // TODO: Implement this function according to requirements
-    
     // 1. Extract and validate API key from headers
-    
+    // Assuming the Auth header is the API key as-is
+    if (!event || !event.Authorization || event.Authorization.trim() === "") {
+      throw new Error('Event does not have the required authorization header');
+    }
     // 2. Authenticate the merchant
+    const merchant = getMerchantByApiKey(event.Authorization);
     
     // 3. Extract and validate the transaction ID
-    
+    if (!event.body.id || event.body.id.trim() === "") {
+      throw new Error('Event does not have any transaction id');
+    }
+    const transaction = getTransactionById(event.body.id)
+
     // 4. Verify the transaction belongs to the authenticated merchant
-    
+    if (typeof merchant == null) {
+      throw new Error('Authorization does not match merchant');
+    } else if (!merchant.isActive) {
+      throw new Error('Merchant is not active');
+    }
+
+    if (typeof transaction == null) {
+      throw new Error('Transaction does not exist');
+    } else if (typeof transaction === "object" && transaction.merchantId != merchant.id) {
+      throw new Error('Transaction does not match merchant');
+    } else if (!transaction.status == 'processed') {
+      throw new Error('Transaction has been processed or has failed previously');
+    }
+
     // 5. Retrieve reward information
-    
+    const reward = getRewardByTransactionId(transaction.id)
+    if (typeof reward == null) {
+      throw new Error('Reward does not exist');
+    }
+
     // 6. Return appropriate response
-    
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Not implemented yet' })
+      body: JSON.stringify(reward)
     };
   } catch (error) {
     console.error('Error processing request:', error);
-    
+
+    // TODO: look for a cleaner way to handle different errors and responding
+    if (error == 'Event does not have any transaction id') {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: error })
+      };
+    }
+
+    if (error == 'Event does not have the required authorization header') {
+      return {
+        statusCode: 401,
+        body: JSON.stringify({ message: error })
+      };
+    }
+
+    if (error == 'Authorization does not match merchant'
+        || error == 'Transaction does not match merchant') {
+      return {
+        statusCode: 403,
+        body: JSON.stringify({ message: error })
+      };
+    }
+
+    if (error == 'Transaction does not exist') {
+      return {
+        statusCode: 404,
+        body: JSON.stringify({ message: error })
+      };
+    }
+
     return {
       statusCode: 500,
       body: JSON.stringify({ message: 'Internal server error' })
